@@ -5,9 +5,12 @@ node_modules/
 vendor/
 
 # Production builds
-/dist
-/build
+dist/
+build/
 dist-ssr/
+backend/main
+backend/policyhub
+backend/bin/
 
 # Development
 .vite/
@@ -81,3 +84,4 @@ Thumbs.db
 
 # Generated code
 internal/db/sqlc/
+frontend/vite.config.js

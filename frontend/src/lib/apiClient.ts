@@ -20,7 +20,7 @@ class PolicyHubApiClient {
   private timeout: number;
 
   constructor() {
-    this.baseUrl = API_CONFIG.BASE_URL;
+    this.baseUrl = (window as any).config?.apiUrl || API_CONFIG.BASE_URL;
     this.timeout = TIMING.API_TIMEOUT;
   }
 
