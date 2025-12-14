@@ -1,7 +1,11 @@
 openapi: 3.0.3
 info:
   title: Policy Hub API
-  description: API for managing and serving API management policies
+  description: |
+    The Policy Hub API is a comprehensive platform for managing and distributing API platform policies.
+    It provides endpoints for discovering, versioning, and retrieving policy definitions, metadata, and documentation.
+    Key features include policy search and filtering, version management, batch retrieval, documentation access,
+    and synchronization with external policy repositories.
   version: 1.0.0
   contact:
     name: WSO2
@@ -38,19 +42,7 @@ paths:
           content:
             application/json:
               schema:
-                allOf:
-                  - $ref: '#/components/schemas/BaseResponse'
-                  - type: object
-                    properties:
-                      data:
-                        type: object
-                        properties:
-                          status:
-                            type: string
-                            example: ok
-                          timestamp:
-                            type: string
-                            format: date-time
+                $ref: '#/components/schemas/HealthResponse'
 
   /policies:
     get:
@@ -115,14 +107,7 @@ paths:
           content:
             application/json:
               schema:
-                allOf:
-                  - $ref: '#/components/schemas/PaginatedResponse'
-                  - type: object
-                    properties:
-                      data:
-                        type: array
-                        items:
-                          $ref: '#/components/schemas/Policy'
+                $ref: '#/components/schemas/PoliciesListResponse'
 
   /policies/batch:
     post:
@@ -143,14 +128,7 @@ paths:
           content:
             application/json:
               schema:
-                allOf:
-                  - $ref: '#/components/schemas/BaseResponse'
-                  - type: object
-                    properties:
-                      data:
-                        type: array
-                        items:
-                          $ref: '#/components/schemas/PolicyWithDefinition'
+                $ref: '#/components/schemas/PoliciesWithDefinitionsResponse'
         '400':
           description: Invalid request payload
           content:
@@ -170,15 +148,7 @@ paths:
           content:
             application/json:
               schema:
-                allOf:
-                  - $ref: '#/components/schemas/BaseResponse'
-                  - type: object
-                    properties:
-                      data:
-                        type: array
-                        items:
-                          type: string
-                        example: ["security", "networking", "compliance", "traffic-control"]
+                $ref: '#/components/schemas/CategoriesResponse'
 
   /policies/providers:
     get:
@@ -192,15 +162,7 @@ paths:
           content:
             application/json:
               schema:
-                allOf:
-                  - $ref: '#/components/schemas/BaseResponse'
-                  - type: object
-                    properties:
-                      data:
-                        type: array
-                        items:
-                          type: string
-                        example: ["WSO2", "AWS", "Azure", "Google Cloud"]
+                $ref: '#/components/schemas/ProvidersResponse'
 
   /policies/platforms:
     get:
@@ -214,15 +176,7 @@ paths:
           content:
             application/json:
               schema:
-                allOf:
-                  - $ref: '#/components/schemas/BaseResponse'
-                  - type: object
-                    properties:
-                      data:
-                        type: array
-                        items:
-                          type: string
-                        example: ["apim-4.5+", "kubernetes", "docker", "linux"]
+                $ref: '#/components/schemas/PlatformsResponse'
 
   /policies/{name}:
     get:
@@ -243,12 +197,7 @@ paths:
           content:
             application/json:
               schema:
-                allOf:
-                  - $ref: '#/components/schemas/BaseResponse'
-                  - type: object
-                    properties:
-                      data:
-                        $ref: '#/components/schemas/Policy'
+                $ref: '#/components/schemas/PolicyResponse'
         '404':
           description: Policy not found
           content:
@@ -288,14 +237,7 @@ paths:
           content:
             application/json:
               schema:
-                allOf:
-                  - $ref: '#/components/schemas/PaginatedResponse'
-                  - type: object
-                    properties:
-                      data:
-                        type: array
-                        items:
-                          $ref: '#/components/schemas/Policy'
+                $ref: '#/components/schemas/PolicyVersionsResponse'
 
   /policies/{name}/versions/latest:
     get:
@@ -317,12 +259,7 @@ paths:
           content:
             application/json:
               schema:
-                allOf:
-                  - $ref: '#/components/schemas/BaseResponse'
-                  - type: object
-                    properties:
-                      data:
-                        $ref: '#/components/schemas/Policy'
+                $ref: '#/components/schemas/PolicyResponse'
         '404':
           description: Policy not found or has no versions
           content:
@@ -355,12 +292,7 @@ paths:
           content:
             application/json:
               schema:
-                allOf:
-                  - $ref: '#/components/schemas/BaseResponse'
-                  - type: object
-                    properties:
-                      data:
-                        $ref: '#/components/schemas/Policy'
+                $ref: '#/components/schemas/PolicyResponse'
         '404':
           description: Policy version not found
           content:
@@ -422,12 +354,7 @@ paths:
           content:
             application/json:
               schema:
-                allOf:
-                  - $ref: '#/components/schemas/BaseResponse'
-                  - type: object
-                    properties:
-                      data:
-                        $ref: '#/components/schemas/PolicyWithDefinition'
+                $ref: '#/components/schemas/PolicyWithDefinitionResponse'
         '404':
           description: Policy version not found
           content:
@@ -460,12 +387,7 @@ paths:
           content:
             application/json:
               schema:
-                allOf:
-                  - $ref: '#/components/schemas/BaseResponse'
-                  - type: object
-                    properties:
-                      data:
-                        $ref: '#/components/schemas/DocsAllResponse'
+                $ref: '#/components/schemas/DocumentationListResponse'
 
   /policies/{name}/versions/{version}/docs/{page}:
     get:
@@ -499,12 +421,7 @@ paths:
           content:
             application/json:
               schema:
-                allOf:
-                  - $ref: '#/components/schemas/BaseResponse'
-                  - type: object
-                    properties:
-                      data:
-                        $ref: '#/components/schemas/DocsSingleResponse'
+                $ref: '#/components/schemas/DocumentationResponse'
         '404':
           description: Documentation page not found
           content:
@@ -530,12 +447,7 @@ paths:
           content:
             application/json:
               schema:
-                allOf:
-                  - $ref: '#/components/schemas/BaseResponse'
-                  - type: object
-                    properties:
-                      data:
-                        $ref: '#/components/schemas/SyncResponse'
+                $ref: '#/components/schemas/SyncStatusResponse'
         '400':
           description: Validation error
           content:
@@ -634,6 +546,248 @@ components:
       required:
         - code
         - message
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        data:
+          nullable: true
+          example: null
+        error:
+          $ref: '#/components/schemas/ErrorObject'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      required:
+        - success
+        - meta
+
+    HealthResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          properties:
+            status:
+              type: string
+              example: ok
+        error:
+          nullable: true
+          example: null
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      required:
+        - success
+        - meta
+
+    PoliciesListResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Policy'
+        error:
+          nullable: true
+          example: null
+        meta:
+          $ref: '#/components/schemas/PaginatedResponseMeta'
+      required:
+        - success
+        - meta
+
+    PoliciesWithDefinitionsResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/PolicyWithDefinition'
+        error:
+          nullable: true
+          example: null
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      required:
+        - success
+        - meta
+
+    CategoriesResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: array
+          items:
+            type: string
+          example: ["security", "networking", "compliance", "traffic-control"]
+        error:
+          nullable: true
+          example: null
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      required:
+        - success
+        - meta
+
+    ProvidersResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: array
+          items:
+            type: string
+          example: ["wso2", "community", "third-party"]
+        error:
+          nullable: true
+          example: null
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      required:
+        - success
+        - meta
+
+    PlatformsResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: array
+          items:
+            type: string
+          example: ["apim-4.5+", "kubernetes", "docker", "linux"]
+        error:
+          nullable: true
+          example: null
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      required:
+        - success
+        - meta
+
+    PolicyResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          $ref: '#/components/schemas/Policy'
+        error:
+          nullable: true
+          example: null
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      required:
+        - success
+        - meta
+
+    PolicyVersionsResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Policy'
+        error:
+          nullable: true
+          example: null
+        meta:
+          $ref: '#/components/schemas/PaginatedResponseMeta'
+      required:
+        - success
+        - meta
+
+    DocumentationListResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/PolicyDocumentation'
+        error:
+          nullable: true
+          example: null
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      required:
+        - success
+        - meta
+
+    DocumentationResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          $ref: '#/components/schemas/PolicyDocumentation'
+        error:
+          nullable: true
+          example: null
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      required:
+        - success
+        - meta
+
+    SyncStatusResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          $ref: '#/components/schemas/SyncStatus'
+        error:
+          nullable: true
+          example: null
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      required:
+        - success
+        - meta
+
+    PolicyWithDefinitionResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          $ref: '#/components/schemas/PolicyWithDefinition'
+        error:
+          nullable: true
+          example: null
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      required:
+        - success
+        - meta
 
     PaginationMeta:
       type: object
@@ -864,7 +1018,8 @@ components:
           description: URL to raw policy definition file (YAML format only)
           example: https://raw.githubusercontent.com/wso2/policies/rate-limit/v1.1.0/policy-definition.yml
         metadata:
-          $ref: '#/components/schemas/PolicyMetadata'
+          allOf:
+            - $ref: '#/components/schemas/PolicyMetadata'
           description: Policy metadata
         documentation:
           type: object
@@ -945,20 +1100,6 @@ components:
       required:
         - name
 
-    BatchPolicyResponse:
-      type: object
-      properties:
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/PolicyBatchItem'
-        errors:
-          type: array
-          items:
-            $ref: '#/components/schemas/PolicyError'
-      required:
-        - data
-
     PolicyBatchItem:
       type: object
       properties:
@@ -1006,3 +1147,38 @@ components:
       required:
         - name
         - error
+
+    PolicyDocumentation:
+      type: object
+      properties:
+        page:
+          type: string
+          enum: [overview, configuration, examples, faq]
+        format:
+          type: string
+          enum: [markdown]
+          example: markdown
+        content:
+          type: string
+      required:
+        - page
+        - format
+        - content
+
+    SyncStatus:
+      type: object
+      properties:
+        policyName:
+          type: string
+          example: rate-limit
+        version:
+          type: string
+          example: v1.1.0
+        status:
+          type: string
+          enum: [synced]
+          example: synced
+      required:
+        - policyName
+        - version
+        - status
