@@ -1,0 +1,1184 @@
+openapi: 3.0.3
+info:
+  title: Policy Hub API
+  description: |
+    The Policy Hub API is a comprehensive platform for managing and distributing API platform policies.
+    It provides endpoints for discovering, versioning, and retrieving policy definitions, metadata, and documentation.
+    Key features include policy search and filtering, version management, batch retrieval, documentation access,
+    and synchronization with external policy repositories.
+  version: 1.0.0
+  contact:
+    name: WSO2
+    url: https://wso2.com
+
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+  - url: https://api.policyhub.wso2.com
+    description: Production server
+
+tags:
+  - name: policies
+    description: Policy management operations
+  - name: versions
+    description: Policy version operations
+  - name: docs
+    description: Documentation operations
+  - name: sync
+    description: Internal sync operations
+  - name: health
+    description: Health check operations
+
+paths:
+  /health:
+    get:
+      tags:
+        - health
+      summary: Health check endpoint
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  /policies:
+    get:
+      tags:
+        - policies
+      summary: List all policies
+      operationId: listPolicies
+      parameters:
+        - name: search
+          in: query
+          description: Free text search over name, description, tags
+          schema:
+            type: string
+        - name: category
+          in: query
+          description: Filter by category (comma-separated for multiple)
+          schema:
+            type: string
+        - name: categories
+          in: query
+          description: Filter by categories (comma-separated, alternative to category)
+          schema:
+            type: string
+        - name: provider
+          in: query
+          description: Filter by provider (comma-separated for multiple)
+          schema:
+            type: string
+        - name: providers
+          in: query
+          description: Filter by providers (comma-separated, alternative to provider)
+          schema:
+            type: string
+        - name: platform
+          in: query
+          description: Filter by supported platform (comma-separated for multiple)
+          schema:
+            type: string
+        - name: platforms
+          in: query
+          description: Filter by supported platforms (comma-separated, alternative to platform)
+          schema:
+            type: string
+        - name: page
+          in: query
+          description: Page number
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: pageSize
+          in: query
+          description: Number of items per page
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: List of policies
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PoliciesListResponse'
+
+  /policies/batch:
+    post:
+      tags:
+        - policies
+      summary: Retrieve multiple policies by name and version
+      description: Batch endpoint to retrieve multiple policies with their definitions, metadata, source type and source URL
+      operationId: batchGetPolicies
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BatchPolicyRequest'
+      responses:
+        '200':
+          description: Batch policy retrieval response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PoliciesWithDefinitionsResponse'
+        '400':
+          description: Invalid request payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /policies/categories:
+    get:
+      tags:
+        - policies
+      summary: Get all available categories
+      operationId: getCategories
+      responses:
+        '200':
+          description: List of all categories
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoriesResponse'
+
+  /policies/providers:
+    get:
+      tags:
+        - policies
+      summary: Get all available providers
+      operationId: getProviders
+      responses:
+        '200':
+          description: List of all providers
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProvidersResponse'
+
+  /policies/platforms:
+    get:
+      tags:
+        - policies
+      summary: Get all available platforms
+      operationId: getPlatforms
+      responses:
+        '200':
+          description: List of all platforms
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlatformsResponse'
+
+  /policies/{name}:
+    get:
+      tags:
+        - policies
+      summary: Get policy summary with latest version
+      operationId: getPolicySummary
+      parameters:
+        - name: name
+          in: path
+          required: true
+          description: Policy name
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Policy summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyResponse'
+        '404':
+          description: Policy not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /policies/{name}/versions:
+    get:
+      tags:
+        - versions
+      summary: List policy versions
+      operationId: listPolicyVersions
+      parameters:
+        - name: name
+          in: path
+          required: true
+          description: Policy name
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: List of policy versions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyVersionsResponse'
+
+  /policies/{name}/versions/latest:
+    get:
+      tags:
+        - versions
+      summary: Get latest policy version
+      description: Returns the most recent version of a policy for easy UI navigation
+      operationId: getLatestVersion
+      parameters:
+        - name: name
+          in: path
+          required: true
+          description: Policy name
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Latest policy version detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyResponse'
+        '404':
+          description: Policy not found or has no versions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /policies/{name}/versions/{version}:
+    get:
+      tags:
+        - versions
+      summary: Get policy version metadata
+      operationId: getPolicyVersionDetail
+      parameters:
+        - name: name
+          in: path
+          required: true
+          description: Policy name
+          schema:
+            type: string
+        - name: version
+          in: path
+          required: true
+          description: Policy version
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Policy version detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyResponse'
+        '404':
+          description: Policy version not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /policies/{name}/versions/{version}/definition:
+    get:
+      tags:
+        - versions
+      summary: Get raw policy definition (YAML format)
+      operationId: getPolicyDefinition
+      parameters:
+        - name: name
+          in: path
+          required: true
+          description: Policy name
+          schema:
+            type: string
+        - name: version
+          in: path
+          required: true
+          description: Policy version
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Raw policy definition
+          content:
+            text/yaml:
+              schema:
+                type: string
+                description: Raw policy definition in YAML format
+
+  /policies/{name}/versions/{version}/engine:
+    get:
+      tags:
+        - versions
+      summary: Get policy data for policy engine
+      description: Returns policy metadata and definition optimized for policy engine consumption
+      operationId: getPolicyForEngine
+      parameters:
+        - name: name
+          in: path
+          required: true
+          description: Policy name
+          schema:
+            type: string
+        - name: version
+          in: path
+          required: true
+          description: Policy version
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Policy data for engine
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyWithDefinitionResponse'
+        '404':
+          description: Policy version not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /policies/{name}/versions/{version}/docs:
+    get:
+      tags:
+        - docs
+      summary: Get all documentation pages
+      operationId: getAllDocs
+      parameters:
+        - name: name
+          in: path
+          required: true
+          description: Policy name
+          schema:
+            type: string
+        - name: version
+          in: path
+          required: true
+          description: Policy version
+          schema:
+            type: string
+      responses:
+        '200':
+          description: All documentation pages
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentationListResponse'
+
+  /policies/{name}/versions/{version}/docs/{page}:
+    get:
+      tags:
+        - docs
+      summary: Get a single documentation page
+      operationId: getSingleDoc
+      parameters:
+        - name: name
+          in: path
+          required: true
+          description: Policy name
+          schema:
+            type: string
+        - name: version
+          in: path
+          required: true
+          description: Policy version
+          schema:
+            type: string
+        - name: page
+          in: path
+          required: true
+          description: Documentation page name
+          schema:
+            type: string
+            enum: [overview, configuration, examples, faq]
+      responses:
+        '200':
+          description: Documentation page
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentationResponse'
+        '404':
+          description: Documentation page not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /sync:
+    post:
+      tags:
+        - sync
+      summary: Sync policy from external source
+      operationId: syncPolicy
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SyncRequest'
+      responses:
+        '200':
+          description: Policy synced successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SyncStatusResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Version already exists (immutable)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    BaseResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          nullable: true
+        error:
+          $ref: '#/components/schemas/ErrorObject'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      required:
+        - success
+        - meta
+
+    PaginatedResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          nullable: true
+        error:
+          $ref: '#/components/schemas/ErrorObject'
+        meta:
+          $ref: '#/components/schemas/PaginatedResponseMeta'
+      required:
+        - success
+        - meta
+
+    ResponseMeta:
+      type: object
+      properties:
+        trace_id:
+          type: string
+          example: "abc123"
+        timestamp:
+          type: string
+          format: date-time
+        request_id:
+          type: string
+          example: "xyz123"
+      required:
+        - trace_id
+        - timestamp
+
+    PaginatedResponseMeta:
+      type: object
+      properties:
+        trace_id:
+          type: string
+          example: "abc123"
+        timestamp:
+          type: string
+          format: date-time
+        request_id:
+          type: string
+          example: "xyz123"
+        pagination:
+          $ref: '#/components/schemas/PaginationMeta'
+      required:
+        - trace_id
+        - timestamp
+        - pagination
+
+    ErrorObject:
+      type: object
+      properties:
+        code:
+          type: string
+          description: Machine-readable error code
+          example: POLICY_NOT_FOUND
+        message:
+          type: string
+          description: Human-readable error message
+          example: Policy not found
+        details:
+          type: object
+          additionalProperties: true
+          description: Optional structured context for debugging
+      required:
+        - code
+        - message
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        data:
+          nullable: true
+          example: null
+        error:
+          $ref: '#/components/schemas/ErrorObject'
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      required:
+        - success
+        - meta
+
+    HealthResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: object
+          properties:
+            status:
+              type: string
+              example: ok
+        error:
+          nullable: true
+          example: null
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      required:
+        - success
+        - meta
+
+    PoliciesListResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Policy'
+        error:
+          nullable: true
+          example: null
+        meta:
+          $ref: '#/components/schemas/PaginatedResponseMeta'
+      required:
+        - success
+        - meta
+
+    PoliciesWithDefinitionsResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/PolicyWithDefinition'
+        error:
+          nullable: true
+          example: null
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      required:
+        - success
+        - meta
+
+    CategoriesResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: array
+          items:
+            type: string
+          example: ["security", "networking", "compliance", "traffic-control"]
+        error:
+          nullable: true
+          example: null
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      required:
+        - success
+        - meta
+
+    ProvidersResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: array
+          items:
+            type: string
+          example: ["wso2", "community", "third-party"]
+        error:
+          nullable: true
+          example: null
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      required:
+        - success
+        - meta
+
+    PlatformsResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: array
+          items:
+            type: string
+          example: ["apim-4.5+", "kubernetes", "docker", "linux"]
+        error:
+          nullable: true
+          example: null
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      required:
+        - success
+        - meta
+
+    PolicyResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          $ref: '#/components/schemas/Policy'
+        error:
+          nullable: true
+          example: null
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      required:
+        - success
+        - meta
+
+    PolicyVersionsResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Policy'
+        error:
+          nullable: true
+          example: null
+        meta:
+          $ref: '#/components/schemas/PaginatedResponseMeta'
+      required:
+        - success
+        - meta
+
+    DocumentationListResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/PolicyDocumentation'
+        error:
+          nullable: true
+          example: null
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      required:
+        - success
+        - meta
+
+    DocumentationResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          $ref: '#/components/schemas/PolicyDocumentation'
+        error:
+          nullable: true
+          example: null
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      required:
+        - success
+        - meta
+
+    SyncStatusResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          $ref: '#/components/schemas/SyncStatus'
+        error:
+          nullable: true
+          example: null
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      required:
+        - success
+        - meta
+
+    PolicyWithDefinitionResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        data:
+          $ref: '#/components/schemas/PolicyWithDefinition'
+        error:
+          nullable: true
+          example: null
+        meta:
+          $ref: '#/components/schemas/ResponseMeta'
+      required:
+        - success
+        - meta
+
+    PaginationMeta:
+      type: object
+      properties:
+        page:
+          type: integer
+          minimum: 1
+        pageSize:
+          type: integer
+          minimum: 1
+        totalItems:
+          type: integer
+          minimum: 0
+        totalPages:
+          type: integer
+          minimum: 0
+
+
+
+    Policy:
+      type: object
+      description: Standardized policy object used across all GET endpoints
+      properties:
+        name:
+          type: string
+          example: rate-limit
+        version:
+          type: string
+          example: v1.1.0
+        displayName:
+          type: string
+          example: Rate Limiting Policy
+        description:
+          type: string
+          example: Rate limit policy with enhanced schema
+        provider:
+          type: string
+          example: WSO2
+        categories:
+          type: array
+          items:
+            type: string
+          example: ["security", "traffic-control"]
+        tags:
+          type: array
+          items:
+            type: string
+          example: ["limit", "quota"]
+        supportedPlatforms:
+          type: array
+          items:
+            type: string
+          example: ["apim-4.5+"]
+        logoUrl:
+          type: string
+          format: uri
+          example: https://raw.githubusercontent.com/wso2/policies/rate-limit/v1.1.0/logo.svg
+        bannerUrl:
+          type: string
+          format: uri
+          example: https://raw.githubusercontent.com/wso2/policies/rate-limit/v1.1.0/banner.png
+        iconUrl:
+          type: string
+          format: uri
+          example: https://raw.githubusercontent.com/wso2/policies/rate-limit/v1.1.0/icon.svg
+        releaseDate:
+          type: string
+          format: date
+          example: "2025-02-15"
+        isLatest:
+          type: boolean
+          example: true
+        sourceType:
+          type: string
+          example: github
+        sourceUrl:
+          type: string
+          format: uri
+          example: https://github.com/wso2/policies/rate-limit
+      required:
+        - name
+        - version
+        - displayName
+        - provider
+        - isLatest
+
+    PolicyWithDefinition:
+      type: object
+      description: Streamlined policy object for engine/batch operations including definition
+      properties:
+        name:
+          type: string
+          example: rate-limit
+        version:
+          type: string
+          example: v1.1.0
+        displayName:
+          type: string
+          example: Rate Limiting Policy
+        provider:
+          type: string
+          example: WSO2
+        categories:
+          type: array
+          items:
+            type: string
+          example: ["security", "traffic-control"]
+        releaseDate:
+          type: string
+          format: date
+          example: "2025-02-15"
+        isLatest:
+          type: boolean
+          example: true
+        sourceType:
+          type: string
+          example: github
+        sourceUrl:
+          type: string
+          format: uri
+          example: https://github.com/wso2/policies/rate-limit
+        definition:
+          type: string
+          description: Raw policy definition in YAML format
+          example: |
+            policyName: rate-limit
+            version: v1.1.0
+            schema:
+              type: object
+              properties:
+                requestsPerMinute:
+                  type: integer
+                  minimum: 1
+      required:
+        - name
+        - version
+        - displayName
+        - provider
+        - categories
+        - isLatest
+        - definition
+
+    PolicyMetadata:
+      type: object
+      properties:
+        name:
+          type: string
+          example: rate-limit
+        displayName:
+          type: string
+          example: Rate Limiting Policy
+        provider:
+          type: string
+          example: WSO2
+        description:
+          type: string
+          example: Rate limit traffic per minute
+        categories:
+          type: array
+          items:
+            type: string
+          example: ["security", "traffic-control"]
+        tags:
+          type: array
+          items:
+            type: string
+          example: ["limit", "quota"]
+        supportedPlatforms:
+          type: array
+          items:
+            type: string
+          example: ["apim-4.5+"]
+        logoUrl:
+          type: string
+          format: uri
+          example: https://raw.githubusercontent.com/wso2/policies/rate-limit/v1.1.0/icon.svg
+        bannerUrl:
+          type: string
+          format: uri
+          example: https://raw.githubusercontent.com/wso2/policies/rate-limit/v1.1.0/banner.png
+      required:
+        - name
+        - displayName
+        - provider
+
+    DocsAllResponse:
+      type: array
+      items:
+        $ref: '#/components/schemas/DocsSingleResponse'
+
+    DocsSingleResponse:
+      type: object
+      properties:
+        page:
+          type: string
+          enum: [overview, configuration, examples, faq]
+        format:
+          type: string
+          enum: [markdown]
+          example: markdown
+        content:
+          type: string
+      required:
+        - page
+        - format
+        - content
+
+    SyncRequest:
+      type: object
+      properties:
+        policyName:
+          type: string
+          example: rate-limit
+        version:
+          type: string
+          example: v1.1.0
+        sourceType:
+          type: string
+          enum: [github]
+          example: github
+        sourceUrl:
+          type: string
+          format: uri
+          example: https://github.com/wso2/policies/rate-limit
+        definitionUrl:
+          type: string
+          format: uri
+          description: URL to raw policy definition file (YAML format only)
+          example: https://raw.githubusercontent.com/wso2/policies/rate-limit/v1.1.0/policy-definition.yml
+        metadata:
+          allOf:
+            - $ref: '#/components/schemas/PolicyMetadata'
+          description: Policy metadata
+        documentation:
+          type: object
+          description: Mapping of doc types to absolute URLs of markdown documentation files
+          properties:
+            overview:
+              type: string
+              example: https://raw.githubusercontent.com/wso2/policies/rate-limit/v1.1.0/docs/overview.md
+            configuration:
+              type: string
+              example: https://raw.githubusercontent.com/wso2/policies/rate-limit/v1.1.0/docs/configuration.md
+            examples:
+              type: string
+              example: https://raw.githubusercontent.com/wso2/policies/rate-limit/v1.1.0/docs/examples.md
+            faq:
+              type: string
+              example: https://raw.githubusercontent.com/wso2/policies/rate-limit/v1.1.0/docs/faq.md
+          required: []  # Optional per type
+        assetsBaseUrl:
+          type: string
+          format: uri
+          example: https://raw.githubusercontent.com/wso2/policies/rate-limit/v1.1.0/assets/
+      required:
+        - policyName
+        - version
+        - sourceType
+        - sourceUrl
+        - definitionUrl
+        - metadata
+
+    SyncResponse:
+      type: object
+      properties:
+        policyName:
+          type: string
+          example: rate-limit
+        version:
+          type: string
+          example: v1.1.0
+        status:
+          type: string
+          enum: [synced]
+          example: synced
+      required:
+        - policyName
+        - version
+        - status
+
+    BatchPolicyRequest:
+      type: object
+      properties:
+        policies:
+          type: array
+          items:
+            $ref: '#/components/schemas/PolicyRequestItem'
+          minItems: 1
+          example:
+            - name: rate-limiting
+              version: v2.0.0
+            - name: cors-policy
+              useLatest: true
+      required:
+        - policies
+
+    PolicyRequestItem:
+      type: object
+      properties:
+        name:
+          type: string
+          example: rate-limiting
+        version:
+          type: string
+          example: v2.0.0
+        useLatest:
+          type: boolean
+          default: false
+          example: false
+      required:
+        - name
+
+    PolicyBatchItem:
+      type: object
+      properties:
+        name:
+          type: string
+          example: rate-limiting
+        version:
+          type: string
+          example: v2.0.0
+        sourceType:
+          type: string
+          example: filesystem
+        sourceUrl:
+          type: string
+          example: /storage/rate-limiting/v2.0.0
+        definition:
+          type: object
+          additionalProperties: true
+          example:
+            policyName: rate-limiting
+            version: v2.0.0
+            schema: {}
+        metadata:
+          $ref: '#/components/schemas/PolicyMetadata'
+      required:
+        - name
+        - version
+        - sourceType
+        - sourceUrl
+        - definition
+        - metadata
+
+    PolicyError:
+      type: object
+      properties:
+        name:
+          type: string
+          example: non-existent-policy
+        version:
+          type: string
+          example: v1.0.0
+        error:
+          type: string
+          example: Policy not found
+      required:
+        - name
+        - error
+
+    PolicyDocumentation:
+      type: object
+      properties:
+        page:
+          type: string
+          enum: [overview, configuration, examples, faq]
+        format:
+          type: string
+          enum: [markdown]
+          example: markdown
+        content:
+          type: string
+      required:
+        - page
+        - format
+        - content
+
+    SyncStatus:
+      type: object
+      properties:
+        policyName:
+          type: string
+          example: rate-limit
+        version:
+          type: string
+          example: v1.1.0
+        status:
+          type: string
+          enum: [synced]
+          example: synced
+      required:
+        - policyName
+        - version
+        - status
