@@ -14,7 +14,7 @@ ALTER SEQUENCE policy_docs_id_seq RESTART WITH 1;
 INSERT INTO policy_version (
     policy_name, version, is_latest, display_name, provider, description, 
     categories, tags, logo_path, banner_path, supported_platforms,
-    release_date, definition_yaml, source_type, source_url
+    release_date, definition_yaml, source_type, download_url
 ) VALUES
 -- Rate Limiting Policy Versions
 ('rate-limiting', '1.0.0', false, 'Rate Limiting Policy', 'WSO2', 'Controls the number of requests per time window to prevent API abuse and ensure fair usage', '["security", "traffic-control"]', '["rate-limit", "throttling", "quota"]', 'rate-limiting/1.0.0/assets/icon.svg', 'rate-limiting/1.0.0/assets/banner.png', '["apim-4.5+", "apim-4.4+"]', '2024-01-15',

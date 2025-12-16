@@ -34,7 +34,7 @@ type PolicyVersion struct {
 	DefinitionYaml     string             `json:"definition_yaml"`
 	IconPath           pgtype.Text        `json:"icon_path"`
 	SourceType         pgtype.Text        `json:"source_type"`
-	SourceUrl          pgtype.Text        `json:"source_url"`
+	DownloadUrl        pgtype.Text        `json:"download_url"`
 	CreatedAt          pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt          pgtype.Timestamptz `json:"updated_at"`
 	MajorVersion       pgtype.Int4        `json:"major_version"`

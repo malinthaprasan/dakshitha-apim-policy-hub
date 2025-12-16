@@ -32,7 +32,7 @@ export function PolicyHeader({ summary, versionDetail }: PolicyHeaderProps) {
     releaseDate: summary.releaseDate,
     isLatest: summary.isLatest,
     sourceType: summary.sourceType,
-    sourceUrl: summary.sourceUrl,
+    downloadUrl: summary.downloadUrl,
   };
 
   return (

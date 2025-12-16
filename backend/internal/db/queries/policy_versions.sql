@@ -45,7 +45,7 @@ WITH ranked_versions AS (
 SELECT 
     id, policy_name, version, is_latest, display_name, provider, description, 
     categories, tags, logo_path, banner_path, supported_platforms, 
-    release_date, definition_yaml, icon_path, source_type, source_url, 
+    release_date, definition_yaml, icon_path, source_type, download_url, 
     created_at, updated_at
 FROM ranked_versions 
 WHERE version_rank = 1
@@ -111,7 +111,7 @@ INSERT INTO policy_version (
     definition_yaml,
     icon_path,
     source_type,
-    source_url,
+    download_url,
     created_at,
     updated_at
 ) VALUES (

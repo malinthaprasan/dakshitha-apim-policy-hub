@@ -99,15 +99,15 @@ func CalculateTotalPages(totalItems, pageSize int) int {
 	return pages
 }
 
-// BatchPolicyRequest represents a single policy request in the batch
-type BatchPolicyRequest struct {
+// ResolvePolicyRequest represents a single policy request in the resolve operation
+type ResolvePolicyRequest struct {
 	Name              string
 	RetrievalStrategy string
 	BaseVersion       string
 }
 
-// PolicyBatchItem represents a policy item in batch response
-type PolicyBatchItem struct {
+// PolicyResolveItem represents a policy item in resolve response
+type PolicyResolveItem struct {
 	Name       string
 	Version    string
 	SourceType string
@@ -116,8 +116,8 @@ type PolicyBatchItem struct {
 	Metadata   *PolicyVersion
 }
 
-// PolicyBatchError represents an error for a specific policy in batch response
-type PolicyBatchError struct {
+// PolicyResolveError represents an error for a specific policy in resolve response
+type PolicyResolveError struct {
 	Name    string
 	Version string
 	Error   string

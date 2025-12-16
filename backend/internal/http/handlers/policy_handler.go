@@ -234,9 +234,9 @@ func (h *PolicyHandler) GetPlatforms(c *gin.Context) {
 	middleware.SendSuccess(c, platforms)
 }
 
-// BatchGetPolicies handles POST /policies/batch
-func (h *PolicyHandler) BatchGetPolicies(c *gin.Context) {
-	var request dto.BatchPolicyRequestDTO
+// ResolvePolicies handles POST /policies/resolve
+func (h *PolicyHandler) ResolvePolicies(c *gin.Context) {
+	var request dto.ResolvePolicyRequestDTO
 	if err := c.ShouldBindJSON(&request); err != nil {
 		_ = c.Error(err)
 		return
@@ -255,9 +255,9 @@ func (h *PolicyHandler) BatchGetPolicies(c *gin.Context) {
 	}
 
 	// Convert DTOs to service types
-	serviceRequests := make([]policy.BatchPolicyRequest, 0, len(request.Policies))
+	serviceRequests := make([]policy.ResolvePolicyRequest, 0, len(request.Policies))
 	for _, req := range request.Policies {
-		serviceRequests = append(serviceRequests, policy.BatchPolicyRequest{
+		serviceRequests = append(serviceRequests, policy.ResolvePolicyRequest{
 			Name:              req.Name,
 			RetrievalStrategy: req.RetrievalStrategy,
 			BaseVersion:       req.BaseVersion,
@@ -265,7 +265,7 @@ func (h *PolicyHandler) BatchGetPolicies(c *gin.Context) {
 	}
 
 	// Call service
-	results, errors := h.service.BatchGetPolicies(c.Request.Context(), serviceRequests)
+	results, errors := h.service.ResolvePolicies(c.Request.Context(), serviceRequests)
 
 	// Convert results to DTOs
 	responseData := make([]dto.PolicyWithDefinitionDTO, 0, len(results))

@@ -102,7 +102,7 @@ func (s *Service) SyncPolicy(ctx context.Context, req *SyncRequest) (*SyncResult
 	s.logger.Info("Policy synchronization started",
 		zap.String("policy", req.PolicyName),
 		zap.String("version", req.Version),
-		zap.String("source_url", req.SourceURL),
+		zap.String("download_url", req.SourceURL),
 		zap.Int("docs_count", len(req.Documentation)),
 		zap.Bool("has_assets", req.AssetsBaseURL != ""))
 

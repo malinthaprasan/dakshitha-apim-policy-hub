@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS policy_version (
 	definition_yaml TEXT NOT NULL,
 	icon_path VARCHAR(500),
 	source_type VARCHAR(50),
-	source_url VARCHAR(1000),
+	download_url VARCHAR(1000),
 	
 	created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
 	updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),

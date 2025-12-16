@@ -246,7 +246,7 @@ curl -X POST http://localhost:8080/sync \
     "policyName": "rate-limit",
     "version": "v1.1.0",
     "sourceType": "github",
-    "sourceUrl": "https://github.com/wso2/policies/rate-limit",
+    "downloadUrl": "https://github.com/wso2/policies/rate-limit",
     "definitionUrl": "https://raw.githubusercontent.com/.../policy-definition.json",
     "metadataUrl": "https://raw.githubusercontent.com/.../metadata.json",
     "docsBaseUrl": "https://raw.githubusercontent.com/.../docs/",

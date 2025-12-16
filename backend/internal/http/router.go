@@ -41,11 +41,9 @@ func SetupRouter(
 	apiV1 := router.Group("/api/v1")
 
 	// Public routes under /api/v1
-	apiV1.GET("/health", healthHandler.HealthCheck)
-
 	// Policy routes
 	apiV1.GET("/policies", validationMW.ValidatePagination(), policyHandler.ListPolicies)
-	apiV1.POST("/policies/batch", policyHandler.BatchGetPolicies)
+	apiV1.POST("/policies/resolve", policyHandler.ResolvePolicies)
 
 	// Metadata routes (must come before parameterized routes)
 	apiV1.GET("/policies/categories", policyHandler.GetCategories)

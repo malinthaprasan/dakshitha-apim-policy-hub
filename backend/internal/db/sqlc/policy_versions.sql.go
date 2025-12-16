@@ -13,7 +13,7 @@ import (
 
 const bulkGetPolicyVersionsByNames = `-- name: BulkGetPolicyVersionsByNames :many
 
-SELECT id, policy_name, version, is_latest, display_name, provider, description, categories, tags, logo_path, banner_path, supported_platforms, release_date, definition_yaml, icon_path, source_type, source_url, created_at, updated_at, major_version, minor_version, patch_version FROM policy_version
+SELECT id, policy_name, version, is_latest, display_name, provider, description, categories, tags, logo_path, banner_path, supported_platforms, release_date, definition_yaml, icon_path, source_type, download_url, created_at, updated_at, major_version, minor_version, patch_version FROM policy_version
 WHERE policy_name = ANY($1::text[])
 `
 
@@ -46,7 +46,7 @@ func (q *Queries) BulkGetPolicyVersionsByNames(ctx context.Context, dollar_1 []s
 			&i.DefinitionYaml,
 			&i.IconPath,
 			&i.SourceType,
-			&i.SourceUrl,
+			&i.DownloadUrl,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.MajorVersion,
@@ -105,7 +105,7 @@ func (q *Queries) CountPolicyVersions(ctx context.Context, policyName string) (i
 const filterPoliciesByMultiple = `-- name: FilterPoliciesByMultiple :many
 WITH ranked_versions AS (
     SELECT 
-        pv.id, pv.policy_name, pv.version, pv.is_latest, pv.display_name, pv.provider, pv.description, pv.categories, pv.tags, pv.logo_path, pv.banner_path, pv.supported_platforms, pv.release_date, pv.definition_yaml, pv.icon_path, pv.source_type, pv.source_url, pv.created_at, pv.updated_at, pv.major_version, pv.minor_version, pv.patch_version,
+        pv.id, pv.policy_name, pv.version, pv.is_latest, pv.display_name, pv.provider, pv.description, pv.categories, pv.tags, pv.logo_path, pv.banner_path, pv.supported_platforms, pv.release_date, pv.definition_yaml, pv.icon_path, pv.source_type, pv.download_url, pv.created_at, pv.updated_at, pv.major_version, pv.minor_version, pv.patch_version,
         ROW_NUMBER() OVER (
             PARTITION BY pv.policy_name 
             ORDER BY 
@@ -121,7 +121,7 @@ WITH ranked_versions AS (
 SELECT 
     id, policy_name, version, is_latest, display_name, provider, description, 
     categories, tags, logo_path, banner_path, supported_platforms, 
-    release_date, definition_yaml, icon_path, source_type, source_url, 
+    release_date, definition_yaml, icon_path, source_type, download_url, 
     created_at, updated_at
 FROM ranked_versions 
 WHERE version_rank = 1
@@ -155,7 +155,7 @@ type FilterPoliciesByMultipleRow struct {
 	DefinitionYaml     string             `json:"definition_yaml"`
 	IconPath           pgtype.Text        `json:"icon_path"`
 	SourceType         pgtype.Text        `json:"source_type"`
-	SourceUrl          pgtype.Text        `json:"source_url"`
+	DownloadUrl        pgtype.Text        `json:"download_url"`
 	CreatedAt          pgtype.Timestamptz `json:"created_at"`
 	UpdatedAt          pgtype.Timestamptz `json:"updated_at"`
 }
@@ -193,7 +193,7 @@ func (q *Queries) FilterPoliciesByMultiple(ctx context.Context, arg FilterPolici
 			&i.DefinitionYaml,
 			&i.IconPath,
 			&i.SourceType,
-			&i.SourceUrl,
+			&i.DownloadUrl,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		); err != nil {
@@ -293,7 +293,7 @@ func (q *Queries) GetDistinctProviders(ctx context.Context) ([]string, error) {
 }
 
 const getLatestPolicyVersion = `-- name: GetLatestPolicyVersion :one
-SELECT id, policy_name, version, is_latest, display_name, provider, description, categories, tags, logo_path, banner_path, supported_platforms, release_date, definition_yaml, icon_path, source_type, source_url, created_at, updated_at, major_version, minor_version, patch_version FROM policy_version
+SELECT id, policy_name, version, is_latest, display_name, provider, description, categories, tags, logo_path, banner_path, supported_platforms, release_date, definition_yaml, icon_path, source_type, download_url, created_at, updated_at, major_version, minor_version, patch_version FROM policy_version
 WHERE policy_name = $1 AND is_latest = TRUE
 `
 
@@ -317,7 +317,7 @@ func (q *Queries) GetLatestPolicyVersion(ctx context.Context, policyName string)
 		&i.DefinitionYaml,
 		&i.IconPath,
 		&i.SourceType,
-		&i.SourceUrl,
+		&i.DownloadUrl,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.MajorVersion,
@@ -330,7 +330,7 @@ func (q *Queries) GetLatestPolicyVersion(ctx context.Context, policyName string)
 const getPolicyVersion = `-- name: GetPolicyVersion :one
 
 
-SELECT id, policy_name, version, is_latest, display_name, provider, description, categories, tags, logo_path, banner_path, supported_platforms, release_date, definition_yaml, icon_path, source_type, source_url, created_at, updated_at, major_version, minor_version, patch_version FROM policy_version
+SELECT id, policy_name, version, is_latest, display_name, provider, description, categories, tags, logo_path, banner_path, supported_platforms, release_date, definition_yaml, icon_path, source_type, download_url, created_at, updated_at, major_version, minor_version, patch_version FROM policy_version
 WHERE policy_name = $1 AND version = $2
 `
 
@@ -363,7 +363,7 @@ func (q *Queries) GetPolicyVersion(ctx context.Context, arg GetPolicyVersionPara
 		&i.DefinitionYaml,
 		&i.IconPath,
 		&i.SourceType,
-		&i.SourceUrl,
+		&i.DownloadUrl,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.MajorVersion,
@@ -375,7 +375,7 @@ func (q *Queries) GetPolicyVersion(ctx context.Context, arg GetPolicyVersionPara
 
 const getPolicyVersionByExact = `-- name: GetPolicyVersionByExact :one
 
-SELECT id, policy_name, version, is_latest, display_name, provider, description, categories, tags, logo_path, banner_path, supported_platforms, release_date, definition_yaml, icon_path, source_type, source_url, created_at, updated_at, major_version, minor_version, patch_version FROM policy_version
+SELECT id, policy_name, version, is_latest, display_name, provider, description, categories, tags, logo_path, banner_path, supported_platforms, release_date, definition_yaml, icon_path, source_type, download_url, created_at, updated_at, major_version, minor_version, patch_version FROM policy_version
 WHERE policy_name = $1 AND version = $2
 `
 
@@ -407,7 +407,7 @@ func (q *Queries) GetPolicyVersionByExact(ctx context.Context, arg GetPolicyVers
 		&i.DefinitionYaml,
 		&i.IconPath,
 		&i.SourceType,
-		&i.SourceUrl,
+		&i.DownloadUrl,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.MajorVersion,
@@ -418,7 +418,7 @@ func (q *Queries) GetPolicyVersionByExact(ctx context.Context, arg GetPolicyVers
 }
 
 const getPolicyVersionByLatestMajor = `-- name: GetPolicyVersionByLatestMajor :one
-SELECT id, policy_name, version, is_latest, display_name, provider, description, categories, tags, logo_path, banner_path, supported_platforms, release_date, definition_yaml, icon_path, source_type, source_url, created_at, updated_at, major_version, minor_version, patch_version FROM policy_version
+SELECT id, policy_name, version, is_latest, display_name, provider, description, categories, tags, logo_path, banner_path, supported_platforms, release_date, definition_yaml, icon_path, source_type, download_url, created_at, updated_at, major_version, minor_version, patch_version FROM policy_version
 WHERE policy_name = $1
 ORDER BY major_version DESC, minor_version DESC, patch_version DESC
 LIMIT 1
@@ -444,7 +444,7 @@ func (q *Queries) GetPolicyVersionByLatestMajor(ctx context.Context, policyName 
 		&i.DefinitionYaml,
 		&i.IconPath,
 		&i.SourceType,
-		&i.SourceUrl,
+		&i.DownloadUrl,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.MajorVersion,
@@ -455,7 +455,7 @@ func (q *Queries) GetPolicyVersionByLatestMajor(ctx context.Context, policyName 
 }
 
 const getPolicyVersionByLatestMinor = `-- name: GetPolicyVersionByLatestMinor :one
-SELECT id, policy_name, version, is_latest, display_name, provider, description, categories, tags, logo_path, banner_path, supported_platforms, release_date, definition_yaml, icon_path, source_type, source_url, created_at, updated_at, major_version, minor_version, patch_version FROM policy_version
+SELECT id, policy_name, version, is_latest, display_name, provider, description, categories, tags, logo_path, banner_path, supported_platforms, release_date, definition_yaml, icon_path, source_type, download_url, created_at, updated_at, major_version, minor_version, patch_version FROM policy_version
 WHERE policy_name = $1 
   AND major_version = $2
 ORDER BY minor_version DESC, patch_version DESC
@@ -487,7 +487,7 @@ func (q *Queries) GetPolicyVersionByLatestMinor(ctx context.Context, arg GetPoli
 		&i.DefinitionYaml,
 		&i.IconPath,
 		&i.SourceType,
-		&i.SourceUrl,
+		&i.DownloadUrl,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.MajorVersion,
@@ -498,7 +498,7 @@ func (q *Queries) GetPolicyVersionByLatestMinor(ctx context.Context, arg GetPoli
 }
 
 const getPolicyVersionByLatestPatch = `-- name: GetPolicyVersionByLatestPatch :one
-SELECT id, policy_name, version, is_latest, display_name, provider, description, categories, tags, logo_path, banner_path, supported_platforms, release_date, definition_yaml, icon_path, source_type, source_url, created_at, updated_at, major_version, minor_version, patch_version FROM policy_version
+SELECT id, policy_name, version, is_latest, display_name, provider, description, categories, tags, logo_path, banner_path, supported_platforms, release_date, definition_yaml, icon_path, source_type, download_url, created_at, updated_at, major_version, minor_version, patch_version FROM policy_version
 WHERE policy_name = $1 
   AND major_version = $2 
   AND minor_version = $3
@@ -532,7 +532,7 @@ func (q *Queries) GetPolicyVersionByLatestPatch(ctx context.Context, arg GetPoli
 		&i.DefinitionYaml,
 		&i.IconPath,
 		&i.SourceType,
-		&i.SourceUrl,
+		&i.DownloadUrl,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.MajorVersion,
@@ -559,13 +559,13 @@ INSERT INTO policy_version (
     definition_yaml,
     icon_path,
     source_type,
-    source_url,
+    download_url,
     created_at,
     updated_at
 ) VALUES (
     $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, NOW(), NOW()
 )
-RETURNING id, policy_name, version, is_latest, display_name, provider, description, categories, tags, logo_path, banner_path, supported_platforms, release_date, definition_yaml, icon_path, source_type, source_url, created_at, updated_at, major_version, minor_version, patch_version
+RETURNING id, policy_name, version, is_latest, display_name, provider, description, categories, tags, logo_path, banner_path, supported_platforms, release_date, definition_yaml, icon_path, source_type, download_url, created_at, updated_at, major_version, minor_version, patch_version
 `
 
 type InsertPolicyVersionParams struct {
@@ -584,7 +584,7 @@ type InsertPolicyVersionParams struct {
 	DefinitionYaml     string      `json:"definition_yaml"`
 	IconPath           pgtype.Text `json:"icon_path"`
 	SourceType         pgtype.Text `json:"source_type"`
-	SourceUrl          pgtype.Text `json:"source_url"`
+	DownloadUrl        pgtype.Text `json:"download_url"`
 }
 
 func (q *Queries) InsertPolicyVersion(ctx context.Context, arg InsertPolicyVersionParams) (PolicyVersion, error) {
@@ -604,7 +604,7 @@ func (q *Queries) InsertPolicyVersion(ctx context.Context, arg InsertPolicyVersi
 		arg.DefinitionYaml,
 		arg.IconPath,
 		arg.SourceType,
-		arg.SourceUrl,
+		arg.DownloadUrl,
 	)
 	var i PolicyVersion
 	err := row.Scan(
@@ -624,7 +624,7 @@ func (q *Queries) InsertPolicyVersion(ctx context.Context, arg InsertPolicyVersi
 		&i.DefinitionYaml,
 		&i.IconPath,
 		&i.SourceType,
-		&i.SourceUrl,
+		&i.DownloadUrl,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.MajorVersion,
@@ -636,7 +636,7 @@ func (q *Queries) InsertPolicyVersion(ctx context.Context, arg InsertPolicyVersi
 
 const listPolicyVersions = `-- name: ListPolicyVersions :many
 
-SELECT id, policy_name, version, is_latest, display_name, provider, description, categories, tags, logo_path, banner_path, supported_platforms, release_date, definition_yaml, icon_path, source_type, source_url, created_at, updated_at, major_version, minor_version, patch_version FROM policy_version
+SELECT id, policy_name, version, is_latest, display_name, provider, description, categories, tags, logo_path, banner_path, supported_platforms, release_date, definition_yaml, icon_path, source_type, download_url, created_at, updated_at, major_version, minor_version, patch_version FROM policy_version
 WHERE policy_name = $1
 ORDER BY created_at DESC
 LIMIT $2 OFFSET $3
@@ -677,7 +677,7 @@ func (q *Queries) ListPolicyVersions(ctx context.Context, arg ListPolicyVersions
 			&i.DefinitionYaml,
 			&i.IconPath,
 			&i.SourceType,
-			&i.SourceUrl,
+			&i.DownloadUrl,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.MajorVersion,

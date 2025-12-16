@@ -75,7 +75,7 @@ type SyncRequestDTO struct {
 	PolicyName    string            `json:"policyName" binding:"required"`
 	Version       string            `json:"version" binding:"required"`
 	SourceType    string            `json:"sourceType" binding:"required"`
-	SourceURL     string            `json:"sourceUrl" binding:"required"`
+	SourceURL     string            `json:"downloadUrl" binding:"required"`
 	DefinitionURL string            `json:"definitionUrl" binding:"required"`
 	Metadata      PolicyMetadataDTO `json:"metadata" binding:"required"`
 	Documentation map[string]string `json:"documentation"`
@@ -95,8 +95,8 @@ type HealthResponseDTO struct {
 	Timestamp time.Time `json:"timestamp"`
 }
 
-// BatchPolicyRequestDTO represents a batch policy retrieval request
-type BatchPolicyRequestDTO struct {
+// ResolvePolicyRequestDTO represents a resolve policy retrieval request
+type ResolvePolicyRequestDTO struct {
 	Policies []PolicyRequestItemDTO `json:"policies" binding:"required,min=1"`
 }
 
@@ -107,12 +107,12 @@ type PolicyRequestItemDTO struct {
 	BaseVersion       string `json:"baseVersion,omitempty"`                // For "exact", "latest_patch", "latest_minor"; ignored for "latest_major"
 }
 
-// PolicyBatchItemDTO represents a policy item in the batch response
-type PolicyBatchItemDTO struct {
+// PolicyResolveItemDTO represents a policy item in the resolve response
+type PolicyResolveItemDTO struct {
 	Name       string                 `json:"name"`
 	Version    string                 `json:"version"`
 	SourceType string                 `json:"sourceType"`
-	SourceURL  string                 `json:"sourceUrl"`
+	SourceURL  string                 `json:"downloadUrl"`
 	Definition map[string]interface{} `json:"definition"`
 	Metadata   PolicyMetadataDTO      `json:"metadata"`
 }
@@ -141,7 +141,7 @@ type PolicyDTO struct {
 	ReleaseDate        *string  `json:"releaseDate,omitempty"`
 	IsLatest           bool     `json:"isLatest"`
 	SourceType         string   `json:"sourceType,omitempty"`
-	SourceURL          string   `json:"sourceUrl,omitempty"`
+	SourceURL          string   `json:"downloadUrl,omitempty"`
 }
 
 // PolicyWithDefinitionDTO represents a streamlined policy object for engine/batch operations
@@ -155,6 +155,6 @@ type PolicyWithDefinitionDTO struct {
 	ReleaseDate *string  `json:"releaseDate,omitempty"`
 	IsLatest    bool     `json:"isLatest"`
 	SourceType  string   `json:"sourceType,omitempty"`
-	SourceURL   string   `json:"sourceUrl,omitempty"`
+	SourceURL   string   `json:"downloadUrl,omitempty"`
 	Definition  string   `json:"definition"`
 }

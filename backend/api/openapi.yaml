@@ -26,24 +26,8 @@ tags:
     description: Documentation operations
   - name: sync
     description: Internal sync operations
-  - name: health
-    description: Health check operations
 
 paths:
-  /health:
-    get:
-      tags:
-        - health
-      summary: Health check endpoint
-      operationId: healthCheck
-      responses:
-        '200':
-          description: Service is healthy
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/HealthResponse'
-
   /policies:
     get:
       tags:
@@ -109,25 +93,25 @@ paths:
               schema:
                 $ref: '#/components/schemas/PoliciesListResponse'
 
-  /policies/batch:
+  /policies/resolve:
     post:
       tags:
         - policies
       summary: Retrieve multiple policies with strategy-based version selection
       description: |
-        Batch endpoint to retrieve multiple policies with strategy-based version selection.
+        Resolve endpoint to retrieve multiple policies with strategy-based version selection.
         Supports exact version matching, latest patch/minor/major version resolution.
         Maximum 100 policies per request. Version format must be d.d.d (e.g., "1.2.3").
-      operationId: batchGetPolicies
+      operationId: resolvePolicies
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/BatchPolicyRequest'
+              $ref: '#/components/schemas/ResolvePolicyRequest'
       responses:
         '200':
-          description: Batch policy retrieval response
+          description: Resolve policy retrieval response
           content:
             application/json:
               schema:
@@ -456,7 +440,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SyncRequest'
+              $ref: '#/components/schemas/PolicySyncRequest'
       responses:
         '200':
           description: Policy synced successfully
@@ -574,27 +558,6 @@ components:
           example: null
         error:
           $ref: '#/components/schemas/ErrorObject'
-        meta:
-          $ref: '#/components/schemas/ResponseMeta'
-      required:
-        - success
-        - meta
-
-    HealthResponse:
-      type: object
-      properties:
-        success:
-          type: boolean
-          example: true
-        data:
-          type: object
-          properties:
-            status:
-              type: string
-              example: ok
-        error:
-          nullable: true
-          example: null
         meta:
           $ref: '#/components/schemas/ResponseMeta'
       required:
@@ -879,7 +842,7 @@ components:
         sourceType:
           type: string
           example: github
-        sourceUrl:
+        downloadUrl:
           type: string
           format: uri
           example: https://github.com/wso2/policies/rate-limit
@@ -892,7 +855,7 @@ components:
 
     PolicyWithDefinition:
       type: object
-      description: Streamlined policy object for engine/batch operations including definition
+      description: Streamlined policy object for engine/resolve operations including definition
       properties:
         name:
           type: string
@@ -921,7 +884,7 @@ components:
         sourceType:
           type: string
           example: github
-        sourceUrl:
+        downloadUrl:
           type: string
           format: uri
           example: https://github.com/wso2/policies/rate-limit
@@ -1011,7 +974,7 @@ components:
         - format
         - content
 
-    SyncRequest:
+    PolicySyncRequest:
       type: object
       properties:
         policyName:
@@ -1024,7 +987,7 @@ components:
           type: string
           enum: [github]
           example: github
-        sourceUrl:
+        downloadUrl:
           type: string
           format: uri
           example: https://github.com/wso2/policies/rate-limit
@@ -1060,7 +1023,7 @@ components:
           example: https://raw.githubusercontent.com/wso2/policies/rate-limiting/1.1.0/assets/
       required:
         - sourceType
-        - sourceUrl
+        - downloadUrl
         - definitionUrl
         - metadata
 
@@ -1082,7 +1045,7 @@ components:
         - version
         - status
 
-    BatchPolicyRequest:
+    ResolvePolicyRequest:
       type: object
       properties:
         policies:
@@ -1136,7 +1099,7 @@ components:
         - name
         - retrievalStrategy
 
-    PolicyBatchItem:
+    PolicyResolveItem:
       type: object
       properties:
         name:
@@ -1148,7 +1111,7 @@ components:
         sourceType:
           type: string
           example: github
-        sourceUrl:
+        downloadUrl:
           type: string
           example: "https://github.com/wso2/policy-hub/tree/main/storage/rate-limiting/1.1.0"
         definition:
@@ -1165,7 +1128,7 @@ components:
         - name
         - version
         - sourceType
-        - sourceUrl
+        - downloadUrl
         - definition
         - metadata
 

@@ -78,7 +78,7 @@ func sqlcToPolicyVersion(spv sqlc.PolicyVersion) (*PolicyVersion, error) {
 		}
 	}
 
-	var description, logoPath, bannerPath, iconPath, sourceType, sourceUrl *string
+	var description, logoPath, bannerPath, iconPath, sourceType, downloadUrl *string
 	if spv.Description.Valid {
 		description = &spv.Description.String
 	}
@@ -94,8 +94,8 @@ func sqlcToPolicyVersion(spv sqlc.PolicyVersion) (*PolicyVersion, error) {
 	if spv.SourceType.Valid {
 		sourceType = &spv.SourceType.String
 	}
-	if spv.SourceUrl.Valid {
-		sourceUrl = &spv.SourceUrl.String
+	if spv.DownloadUrl.Valid {
+		downloadUrl = &spv.DownloadUrl.String
 	}
 
 	var releaseDate *time.Time
@@ -124,7 +124,7 @@ func sqlcToPolicyVersion(spv sqlc.PolicyVersion) (*PolicyVersion, error) {
 		DefinitionYAML: spv.DefinitionYaml,
 		IconPath:       iconPath,
 		SourceType:     sourceType,
-		SourceURL:      sourceUrl,
+		SourceURL:      downloadUrl,
 		CreatedAt:      spv.CreatedAt.Time,
 		UpdatedAt:      spv.UpdatedAt.Time,
 	}, nil
@@ -163,7 +163,7 @@ func filterRowToPolicyVersion(row sqlc.FilterPoliciesByMultipleRow) (*PolicyVers
 		}
 	}
 
-	var description, logoPath, bannerPath, iconPath, sourceType, sourceUrl *string
+	var description, logoPath, bannerPath, iconPath, sourceType, downloadUrl *string
 	if row.Description.Valid {
 		description = &row.Description.String
 	}
@@ -179,8 +179,8 @@ func filterRowToPolicyVersion(row sqlc.FilterPoliciesByMultipleRow) (*PolicyVers
 	if row.SourceType.Valid {
 		sourceType = &row.SourceType.String
 	}
-	if row.SourceUrl.Valid {
-		sourceUrl = &row.SourceUrl.String
+	if row.DownloadUrl.Valid {
+		downloadUrl = &row.DownloadUrl.String
 	}
 
 	var releaseDate *time.Time
@@ -209,7 +209,7 @@ func filterRowToPolicyVersion(row sqlc.FilterPoliciesByMultipleRow) (*PolicyVers
 		DefinitionYAML: row.DefinitionYaml,
 		IconPath:       iconPath,
 		SourceType:     sourceType,
-		SourceURL:      sourceUrl,
+		SourceURL:      downloadUrl,
 		CreatedAt:      row.CreatedAt.Time,
 		UpdatedAt:      row.UpdatedAt.Time,
 	}, nil
@@ -457,7 +457,7 @@ func (r *SQLCRepository) CreatePolicyVersion(ctx context.Context, version *Polic
 		DefinitionYaml:     version.DefinitionYAML,
 		IconPath:           ptrToPgtypeText(version.IconPath),
 		SourceType:         ptrToPgtypeText(version.SourceType),
-		SourceUrl:          ptrToPgtypeText(version.SourceURL),
+		DownloadUrl:        ptrToPgtypeText(version.SourceURL),
 	})
 
 	if err != nil {

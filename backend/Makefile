@@ -11,7 +11,7 @@ help: ## Show this help message
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "  %-20s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
 build: ## Build the application
-	go build -o bin/policyhub cmd/policyhub/main.go
+	go build -o bin/policyhub main.go
 
 run: ## Run the application
 	go run main.go

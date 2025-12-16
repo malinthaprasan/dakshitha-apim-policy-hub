@@ -52,7 +52,7 @@ export interface Policy {
   releaseDate?: string;
   isLatest: boolean;
   sourceType?: string;
-  sourceUrl?: string;
+  downloadUrl?: string;
 }
 
 // Type aliases for backward compatibility and semantic clarity

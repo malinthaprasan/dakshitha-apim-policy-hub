@@ -257,7 +257,7 @@ curl -X POST https://api.policyhub.wso2.com/sync \
     "policyName": "my-custom-policy",
     "version": "v1.0.0",
     "sourceType": "github",
-    "sourceUrl": "https://github.com/yourorg/my-custom-policy",
+    "downloadUrl": "https://github.com/yourorg/my-custom-policy",
     "definitionUrl": "https://raw.githubusercontent.com/yourorg/my-custom-policy/v1.0.0/policy-definition.json",
     "metadataUrl": "https://raw.githubusercontent.com/yourorg/my-custom-policy/v1.0.0/metadata.json",
     "docsBaseUrl": "https://raw.githubusercontent.com/yourorg/my-custom-policy/v1.0.0/docs/",
