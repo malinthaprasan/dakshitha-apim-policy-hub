@@ -14,7 +14,7 @@ build: ## Build the application
 	go build -o bin/policyhub cmd/policyhub/main.go
 
 run: ## Run the application
-	go run cmd/policyhub/main.go
+	go run main.go
 
 test: ## Run tests
 	go test -v ./...
